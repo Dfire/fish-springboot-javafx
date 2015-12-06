@@ -1,4 +1,4 @@
-package ru.habrahabr.ui;
+package ru.parsek.controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,35 +10,31 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.habrahabr.entity.Contact;
-import ru.habrahabr.service.ContactService;
+
+import ru.parsek.entity.Manufacturer;
+import ru.parsek.entity.Tool;
+import ru.parsek.service.ToolService;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
 
-/**
- * Date: 27.08.15
- * Time: 11:10
- *
- * @author Ruslan Molchanov (ruslanys@gmail.com)
- * @author http://mruslan.com
- */
 @SuppressWarnings("SpringJavaAutowiringInspection")
-public class MainController {
+public class ToolsTableController extends BaseController{
 
-    private Logger logger = LoggerFactory.getLogger(MainController.class);
+    private Logger logger = LoggerFactory.getLogger(ToolsTableController.class);
 
     // Инъекции Spring
-    @Autowired private ContactService contactService;
+    @Autowired 
+    private ToolService toolService;
 
     // Инъекции JavaFX
-    @FXML private TableView<Contact> table;
-    @FXML private TextField txtName;
-    @FXML private TextField txtPhone;
-    @FXML private TextField txtEmail;
-
+    @FXML private TableView<Tool> table;
+    @FXML private TextField txtLabel;
+    @FXML private TextField txtAlloy;
+    @FXML private TextField txtManufacturer;
+    
     // Variables
-    private ObservableList<Contact> data;
+    private ObservableList<Tool> data;
 
     /**
      * Инициализация контроллера от JavaFX.
@@ -51,7 +47,7 @@ public class MainController {
      * и для инициализации лучше использовать метод,
      * описанный аннотацией @PostConstruct,
      * который вызовется спрингом, после того, как им будут произведены все инъекции.
-     * {@link MainController#init()}
+     * {@link ToolsTableController#init()}
      */
     @FXML
     public void initialize() {
@@ -63,23 +59,23 @@ public class MainController {
     @SuppressWarnings("unchecked")
     @PostConstruct
     public void init() {
-        List<Contact> contacts = contactService.findAll();
-        data = FXCollections.observableArrayList(contacts);
+        List<Tool> tools = toolService.findAll();
+        data = FXCollections.observableArrayList(tools);
 
         // Столбцы таблицы
-        TableColumn<Contact, String> idColumn = new TableColumn<>("ID");
+        TableColumn<Tool, Long> idColumn = new TableColumn<>("ID");
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        
+        TableColumn<Tool, String> labelColumn = new TableColumn<>("Маркировка");
+        labelColumn.setCellValueFactory(new PropertyValueFactory<>("label"));
 
-        TableColumn<Contact, String> nameColumn = new TableColumn<>("Имя");
-        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        TableColumn<Tool, String> alloyColumn = new TableColumn<>("Сплав");
+        alloyColumn.setCellValueFactory(new PropertyValueFactory<>("alloy"));
+        
+        TableColumn<Tool, Manufacturer> manufacturerColumn = new TableColumn<>("Производитель");
+        manufacturerColumn.setCellValueFactory(new PropertyValueFactory<>("manufacturer"));
 
-        TableColumn<Contact, String> phoneColumn = new TableColumn<>("Телефон");
-        phoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
-
-        TableColumn<Contact, String> emailColumn = new TableColumn<>("E-mail");
-        emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
-
-        table.getColumns().setAll(idColumn, nameColumn, phoneColumn, emailColumn);
+        table.getColumns().setAll(idColumn, labelColumn, alloyColumn, manufacturerColumn);
 
         // Данные таблицы
         table.setItems(data);
@@ -90,14 +86,19 @@ public class MainController {
      * Привязан к кнопке в FXML файле представления.
      */
     @FXML
-    public void addContact() {
-        Contact contact = new Contact(txtName.getText(), txtPhone.getText(), txtEmail.getText());
-        contactService.save(contact);
-        data.add(contact);
+    public void add() {
+        Tool tool = new Tool(txtLabel.getText(), txtAlloy.getText(),txtManufacturer.getText());
+        toolService.save(tool);
+        data.add(tool);
 
         // чистим поля
-        txtName.setText("");
-        txtPhone.setText("");
-        txtEmail.setText("");
+        txtLabel.setText("");
+        txtAlloy.setText("");
+        txtManufacturer.setText("");
+    }
+    
+    @FXML
+    public void openDictionaries(){
+    	stageController.setScene(SceneName.DICTIONARIES);
     }
 }

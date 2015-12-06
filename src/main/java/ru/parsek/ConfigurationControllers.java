@@ -1,27 +1,44 @@
-package ru.habrahabr;
+package ru.parsek;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import ru.parsek.controller.BaseController;
+import ru.parsek.controller.ManufacturersTableController;
+import ru.parsek.controller.SceneName;
+import ru.parsek.controller.StageController;
+import ru.parsek.controller.ToolsTableController;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import ru.habrahabr.ui.MainController;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * Date: 27.08.15
- * Time: 11:04
- *
- * @author Ruslan Molchanov (ruslanys@gmail.com)
- * @author http://mruslan.com
- */
 @Configuration
-public class ConfigurationControllers {
+public class ConfigurationControllers{
 
-    @Bean(name = "mainView")
-    public View getMainView() throws IOException {
-        return loadView("fxml/main.fxml");
+	private AppRef ref = new AppRef();
+	
+	@Bean(name = "main_menu_view")
+    public View getMainMenuView() throws IOException {
+        return loadView("fxml/menu.fxml");
+    }
+    
+    @Bean(name = "dictionaries_view")
+    public View getDictionariesView() throws IOException {
+        return loadView("fxml/dictionaries.fxml");
+    }
+    
+    @Bean(name = "table_tools_view")
+    public View getTableToolsView() throws IOException {
+        return loadView("fxml/table_tools.fxml");
+    }
+    
+    @Bean(name = "table_manufacturers_view")
+    public View getTableManufacturersView() throws IOException {
+        return loadView("fxml/table_manufacturers.fxml");
     }
 
     /**
@@ -29,10 +46,19 @@ public class ConfigurationControllers {
      * и заставили его сделать произвести все необходимые инъекции.
      */
     @Bean
-    public MainController getMainController() throws IOException {
-        return (MainController) getMainView().getController();
+    public ToolsTableController getTableToolsController() throws IOException {
+        return (ToolsTableController) getTableToolsView().getController();
     }
-
+    
+    @Bean
+    public ManufacturersTableController getTableManufacturersController() throws IOException {
+        return (ManufacturersTableController) getTableManufacturersView().getController();
+    }
+    
+    public void setApplication(Application app){
+    	ref.app = app;
+    }
+    
     /**
      * Самый обыкновенный способ использовать FXML загрузчик.
      * Как раз-таки на этом этапе будет создан объект-контроллер,
@@ -44,12 +70,23 @@ public class ConfigurationControllers {
             fxmlStream = getClass().getClassLoader().getResourceAsStream(url);
             FXMLLoader loader = new FXMLLoader();
             loader.load(fxmlStream);
-            return new View(loader.getRoot(), loader.getController());
+            BaseController controller = loader.getController();
+            controller.setStageController(ref);
+            return new View(loader.getRoot(), controller);
         } finally {
             if (fxmlStream != null) {
                 fxmlStream.close();
             }
         }
+    }
+    
+    public class AppRef implements StageController{
+    	private Application app;
+
+		@Override
+		public void setScene(SceneName scene) {
+			app.setScene(scene);
+		}
     }
 
     /**
@@ -81,5 +118,4 @@ public class ConfigurationControllers {
             this.controller = controller;
         }
     }
-
 }

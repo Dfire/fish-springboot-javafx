@@ -1,4 +1,4 @@
-package ru.habrahabr;
+package ru.parsek;
 
 import javafx.application.Application;
 import org.springframework.boot.SpringApplication;
